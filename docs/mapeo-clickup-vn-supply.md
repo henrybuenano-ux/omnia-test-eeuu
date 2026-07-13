@@ -3,9 +3,11 @@
 > **Destino:** folder `VN Supply / Venezia` (ID `1000460000002755`) · space **Activos**
 > **Subcuenta GHL:** `vuAlfQCdJFMVbxxvhEml` (VENEZIA KITCHEN CABINETS & BATH)
 > **Convención:** 1 lista = bloque funcional · 1 tarea = entregable/workflow · 1 subtarea = 1 nodo/paso
-> **Estado:** BORRADOR para aprobación — nada creado en ClickUp todavía.
+> **Estado:** BORRADOR v2 para aprobación — auditado contra capacidades nativas de GHL. Nada creado en ClickUp todavía.
 >
-> 🔴 = bloqueado por entregable del cliente · 🟡 = parcialmente bloqueado
+> 🔴 = bloqueado por entregable del cliente · 🟡 = parcialmente bloqueado · ⚠️ = factible con condición (ver auditoría al final)
+>
+> **Canales verificados en la subcuenta (muestra de 50 conversaciones):** WhatsApp 42 · Instagram 7 · Facebook 1 · SMS 0 · Email 0. WhatsApp ya está integrado y es el canal real del negocio.
 
 ---
 
@@ -50,8 +52,9 @@
 - Tags de ciclo: `cliente-historico` (migración Clover), `reactivacion` (base de 647), `compro`, `review-dejada`
 - Documentar reglas de uso (qué workflow pone/quita cada tag)
 
-### T7. Pipeline "Ventas" (7 etapas)
-- Crear pipeline: Nuevo lead → Contactado → Calificado → Visita agendada → Estimado enviado → Negociación → Ganado/Perdido
+### T7. Pipeline "Ventas" (6 etapas + estados)
+- Crear pipeline: Nuevo lead → Contactado → Calificado → Visita agendada → Estimado enviado → Negociación
+- ⚠️ "Ganado/Perdido" NO es etapa: se maneja con el **status** nativo de la oportunidad (won/lost) — así los reportes de conversión funcionan bien
 - Eliminar los 4 deals "(Example)" y despublicar el "Marketing Pipeline" genérico
 - Configurar probabilidades y visibilidad en funnel
 
@@ -71,7 +74,7 @@
 - Crear calendario round-robin Aura + Alex, citas de 60 min con buffer de traslado
 - Horarios de atención por sucursal + auto-confirmación
 - Formulario de la cita: dirección, tipo de proyecto, notas
-- 🟢 Definir regla de depósito para visitas (decisión de semana 1)
+- 🟢 Definir regla de depósito para visitas (decisión de semana 1) — ⚠️ el cobro de depósito en el calendario NO puede hacerse con Clover (GHL solo acepta Stripe/PayPal/etc. como pasarela nativa); opciones: conectar Stripe solo para depósitos, o visita sin depósito
 - Conectar Google Calendar de los vendedores (evitar dobles reservas)
 
 ---
@@ -161,20 +164,21 @@
 
 ### SP03 · Estimado enviado + seguimiento sutil
 - Trigger: oportunidad movida a "Estimado enviado" (o field "Link PDF" se llena)
-- Envío del estimado PDF por WhatsApp + email (plantilla con marca)
+- Envío del estimado PDF por WhatsApp (canal principal); email solo como rama condicional "si el contacto tiene email" — los leads nuevos sí lo capturan por bot/formulario
 - Cadencia educativa (enfoque NO agresivo — pedido explícito del cliente): día 1 (¿llegó bien?), día 3 (contenido de valor: cómo elegir gabinete), día 7 (casos/fotos de proyectos), luego 1 vez al mes
 - Cualquier respuesta del cliente → detener secuencia + notificar vendedor
 - Rama a "Negociación" (respondió interesado) o "Perdido" (rechazo explícito) — movimiento por vendedor
 - Registrar fecha de última respuesta en custom field
 
-### SP04 · Nurturing y reactivación de base (los 647)
-- Segmentación previa: la base actual no tiene fuente ni tags y 96% no tiene email → campaña **WhatsApp/SMS first**
-- Importar tags `reactivacion` al segmento objetivo
-- Mensaje 1: reintroducción de la marca + pregunta abierta (¿sigues con tu proyecto de cocina?)
-- Respuesta → entra a SP01 (calificación) + quitar tag `reactivacion`
+### SP04 · Nurturing y reactivación de base (los 647) — SOLO WhatsApp/SMS, sin email
+- **Canal único: WhatsApp (principal) + SMS (respaldo cuando A2P esté aprobado).** Sin campaña de email: el 96% de la base no tiene correo y el canal histórico real del negocio es WhatsApp (42 de las últimas 50 conversaciones)
+- ⚠️ Los contactos con más de 24h sin conversación requieren **plantillas de WhatsApp pre-aprobadas por Meta** (regla de la ventana de 24h) → subtarea: redactar y someter a aprobación 2-3 plantillas de reactivación ES/EN
+- Segmentación previa + tag `reactivacion` al segmento objetivo
+- Mensaje 1 (plantilla WA): reintroducción de la marca + pregunta abierta (¿sigues con tu proyecto de cocina?)
+- Respuesta → se abre ventana de 24h, entra a SP01 (calificación) + quitar tag `reactivacion`
 - Sin respuesta: 2 toques más espaciados (día 7, día 21) y luego frecuencia mensual educativa
 - Opt-out: palabra clave para no-contactar → tag `no-contactar` + DND
-- Límite de envío diario (drip) para proteger el número A2P
+- Envío por lotes (drip/batch) para proteger la calidad del número de WhatsApp y controlar el costo por conversación de Meta
 
 ---
 
@@ -197,7 +201,7 @@
 ### PS01 · Encuesta de satisfacción + Google Review
 - Trigger: oportunidad movida a "Terminado" en Proyectos Activos
 - Delay 24-48h post-instalación
-- Encuesta 1-5 por WA/SMS (una sola pregunta)
+- Encuesta 1-5 por WA/SMS (una sola pregunta) — ⚠️ la lectura de la respuesta se hace con trigger "Customer Replied" + filtro de contenido (patrón estándar GHL), no con survey web
 - Rama **4-5★**: agradecimiento + link directo a Google Review + tag `review-dejada` al confirmar
 - Rama **1-3★**: alerta interna inmediata a Stewart (llamada de recuperación) — NO se envía link de review
 - Registrar puntuación en custom field
@@ -236,6 +240,40 @@
 - Test end-to-end por cada fuente de entrada (WA, IG, Web) hasta review
 - Checklist de cierre contra el alcance aprobado
 - Cobro del 50% restante ($1,400)
+
+---
+
+## Auditoría de factibilidad en GHL (v2)
+
+Cada bloque del mapeo revisado contra capacidades nativas de GoHighLevel:
+
+| Elemento | Veredicto | Notas |
+|---|---|---|
+| White-label, usuarios, permisos, app Lead Connector | ✅ Nativo | — |
+| Dedicated domain + DKIM/SPF | ✅ Nativo | DMARC se hace en GoDaddy (DNS), no en GHL |
+| Registro A2P | ✅ Nativo (Trust Center) | ⚠️ La aprobación puede tardar días/semanas → someter en semana 1 o compromete los 15 días |
+| ~38 custom fields agrupados en carpetas | ✅ Nativo | Sin límite práctico |
+| 2 pipelines + probabilidades | ✅ Nativo | ⚠️ Ganado/Perdido va como **status** de oportunidad, no como etapa |
+| Custom values de marca | ✅ Nativo | — |
+| 3 vistas/filtros | ✅ Nativo | Smart lists (contactos) + filtros guardados (oportunidades) |
+| Calendario round-robin, buffers, recordatorios | ✅ Nativo | ⚠️ Depósito NO cobrable vía Clover — solo Stripe/PayPal nativos; decidir en semana 1 |
+| Conversation AI bilingüe, mensajes cortos | ✅ Nativo | Se controla por prompt |
+| Delay de respuesta 6-8s | ✅ Nativo | Configuración de espera del bot |
+| Bot escribe custom fields, tags, agenda citas | ✅ Nativo | Conversation AI v2 con acciones + booking |
+| Bot en WhatsApp e Instagram | ✅ Verificado | WhatsApp **ya está integrado y activo** en la subcuenta (42/50 conversaciones); IG también conectado |
+| Triggers por canal (WA/IG/FB entrante) | ✅ Nativo | Trigger "Customer Replied" con filtro de canal |
+| Anti-duplicado de oportunidad | ✅ Nativo | Acción Create/Update Opportunity con control de duplicados |
+| Atribución fuente/campaña/anuncio | 🟡 Parcial | GHL captura atribución de Meta para leads **nuevos**; el histórico de 647 no la tiene y no es recuperable |
+| Recordatorios pre-cita 24h/2h + no-show branch | ✅ Nativo | Triggers de appointment status |
+| Stop de secuencia al responder | ✅ Nativo | — |
+| Envío de PDF por WhatsApp | ✅ Nativo | En ventana de 24h libre; fuera de ventana requiere plantilla aprobada |
+| Campaña saliente WA a base fría (SP04) | ⚠️ Con condición | Obligatorio usar **plantillas WA aprobadas por Meta** + envío por lotes; costo por conversación de Meta aplica |
+| Encuesta 1-5 por WA/SMS con ramas | ✅ Patrón estándar | Trigger "Customer Replied" + filtro de contenido |
+| Import CSV con dedup por teléfono | ✅ Nativo | Para la migración Clover |
+| Dashboard con widgets custom | ✅ Nativo | Atribución por anuncio: solo hacia adelante (leads nuevos) |
+| Waits de 15 días / timers de fabricación | ✅ Nativo | — |
+
+**Sin bloqueos técnicos.** Todo el alcance es construible nativo en GHL; los 4 puntos ⚠️ son condiciones de implementación, no impedimentos: (1) A2P cuanto antes, (2) depósito de visita no puede ser con Clover, (3) plantillas WA aprobadas para la reactivación, (4) Ganado/Perdido como status.
 
 ---
 
