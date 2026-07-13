@@ -45,6 +45,7 @@
 - Grupo **Atribución**: Fuente, Campaña, Anuncio de origen, Canal de entrada (WA/IG/Web)
 - Grupo **Integraciones**: clover_customer_id *(se deja creado aunque el add-on no va aún)*
 - Grupo **Post-venta**: Puntuación encuesta (1-5), ¿Dejó review? (Sí/No)
+- Grupo **Bot espejo** ⚠️: duplicado en TEXTO (single line) de cada dropdown que llena el bot — Tipo de cliente (bot), ¿Tiene medidas? (bot), Ciudad (bot), Producto de interés (bot), Idioma preferido (bot). Conversation AI solo escribe campos de texto, no dropdowns; el workflow SYNC (lista 01, T8) pasa el valor al dropdown real
 
 ### T6. Taxonomía de tags
 - Tags de calificación: `contratista`, `cliente-final`, `con-medidas`, `sin-medidas`
@@ -113,6 +114,14 @@
 ### T7. Pruebas end-to-end
 - Test ES y EN por rama (contratista / final con medidas / final sin medidas)
 - Verificar delay, largo de mensajes y que los custom fields se escriben bien
+
+### T8. Workflow SYNC: campos texto (bot) → dropdowns
+- ⚠️ Conversation AI solo escribe campos de texto — este workflow es el puente hacia los dropdowns
+- Trigger: Contact Changed en cada campo espejo `(bot)`
+- If/Else de normalización del texto libre (contains contratista/handyman/showroom/final → opción de lista cerrada)
+- Update Contact Field: set del dropdown real (Tipo de cliente ⚠️ dispara SP01)
+- Rama "no reconocido": notificación interna + tarea al vendedor (no adivinar)
+- Test de cadena: bot escribe texto → sync llena dropdown → SP01 dispara
 
 ---
 
@@ -259,7 +268,7 @@ Cada bloque del mapeo revisado contra capacidades nativas de GoHighLevel:
 | Calendario round-robin, buffers, recordatorios | ✅ Nativo | ⚠️ Depósito NO cobrable vía Clover — solo Stripe/PayPal nativos; decidir en semana 1 |
 | Conversation AI bilingüe, mensajes cortos | ✅ Nativo | Se controla por prompt |
 | Delay de respuesta 6-8s | ✅ Nativo | Configuración de espera del bot |
-| Bot escribe custom fields, tags, agenda citas | ✅ Nativo | Conversation AI v2 con acciones + booking |
+| Bot escribe custom fields, tags, agenda citas | ⚠️ Con condición | Conversation AI solo escribe campos de TEXTO — los dropdowns necesitan campo espejo + workflow SYNC (lista 01, T8) |
 | Bot en WhatsApp e Instagram | ✅ Verificado | WhatsApp **ya está integrado y activo** en la subcuenta (42/50 conversaciones); IG también conectado |
 | Triggers por canal (WA/IG/FB entrante) | ✅ Nativo | Trigger "Customer Replied" con filtro de canal |
 | Anti-duplicado de oportunidad | ✅ Nativo | Acción Create/Update Opportunity con control de duplicados |
@@ -282,12 +291,12 @@ Cada bloque del mapeo revisado contra capacidades nativas de GoHighLevel:
 | Lista | Tareas | Subtareas aprox. |
 |---|---|---|
 | 🏗️ 00 · Setup | 11 | 44 |
-| 🤖 01 · Bot Conversation AI | 7 | 24 |
+| 🤖 01 · Bot Conversation AI | 8 | 29 |
 | 🔵 02 · Lead Sources | 3 | 20 |
 | 🟢 03 · Sales Pipeline | 4 | 26 |
 | 🔴 04 · Active Projects | 1 | 9 |
 | 🌟 05 · Reviews | 1 | 7 |
 | 📊 06 · Migración y cierre | 5 | 19 |
-| **Total** | **32** | **~149** |
+| **Total** | **33** | **~150** |
 
 **Excluido por decisión:** lista 07 · Add-on Clover ↔ GHL (n8n) — no va por el momento (el campo `clover_customer_id` queda creado en el setup para no migrar dos veces).
