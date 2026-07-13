@@ -308,9 +308,10 @@ def opportunities(ctx):
 def opportunities_list(ctx, pipeline_id, limit, status):
     """List opportunities."""
     try:
-        params = {"locationId": _loc(ctx), "limit": limit}
+        # /opportunities/search expects snake_case params (location_id, pipeline_id)
+        params = {"location_id": _loc(ctx), "limit": limit}
         if pipeline_id:
-            params["pipelineId"] = pipeline_id
+            params["pipeline_id"] = pipeline_id
         if status:
             params["status"] = status
         data = api.get("/opportunities/search", params=params)
